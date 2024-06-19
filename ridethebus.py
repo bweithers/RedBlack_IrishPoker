@@ -1,9 +1,12 @@
 from random import shuffle, random
 from statistics import mean, stdev
 import matplotlib.pyplot as plt
+from datetime import datetime
 
-DEBUG = True
+DEBUG = False
 SMART = False
+LOGGING = True
+LOGFILE = open('log.csv', 'a')
 deck = []
 class Card:
     def __init__(self, suit, value, face):
@@ -69,19 +72,21 @@ def makeDeck():
     shuffle(deck)
     
 def __main__():
-    # print('start')
     makeDeck()
     scores = []
-    for _ in range(1):
-        scores.append(driver()) 
-    # print(f'{mean(scores)=:.2f}, {stdev(scores)=:.2f}')
+    iterations = 10000 
+    for _ in range(iterations):
+        scores.append(driver())
+    print(f'Random mode: {mean(scores)=:.2f}, {stdev(scores)=:.2f}')
+
+    makeDeck()
+    global SMART
     SMART = True
     scores = []
-    for _ in range(1):
-        scores.append(driver()) 
-    # print(f'{mean(scores)=:.2f}, {stdev(scores)=:.2f}')
+    for _ in range(iterations):
+        scores.append(driver())
+    print(f'SMART mode: {mean(scores)=:.2f}, {stdev(scores)=:.2f}')
     
-    # print('done')
     # graphit(scores)
 
 def rb(c1: Card) -> bool:
@@ -91,17 +96,20 @@ def rb(c1: Card) -> bool:
         guess = "red"
     else:
         guess = "black"  
+
     if SMART:
-        guess = "red" if sum(map(lambda c: 1 if c.suit in ("Hearts", "Diamonds") else -1, deck)) > 0 else "black"
-    
+        guess = "red" if sum(map(lambda c: 1 if c.suit in ("Hearts", "Diamonds") else -1, deck + [c1])) > 0 else "black"  
     if DEBUG:
         print(f'RB: {guess} vs {c1.suit}')
     # logic
-    if guess == "red" and c1.suit in ("Hearts", "Diamonds"):
-        return True
-    if guess == "black" and c1.suit in ("Spades", "Clubs"):
-        return True
-    return False
+    if guess == "red":
+        result = c1.suit in ("Hearts", "Diamonds")
+    if guess == "black":
+        result =  c1.suit in ("Spades", "Clubs")
+
+    if LOGGING:
+        log_step('rb', guess, result, sum(map(lambda c: 1 if c.suit in ("Hearts", "Diamonds") else -1, deck + [c1])))
+    return result
 
 def hilo(c1: Card, c2: Card) -> bool:
     # guessing algo
@@ -111,17 +119,19 @@ def hilo(c1: Card, c2: Card) -> bool:
     else:
         guess = "lower"
     if SMART:
-        guess = "higher" if sum(map(lambda c: 1 if c > c1 else -1, deck)) > 0 else "lower"
+        guess = "higher" if sum(map(lambda c: 1 if c > c1 else -1, deck + [c2])) > 0 else "lower"
 
     if DEBUG:
         print(f'HILO: {guess} vs {c1.value} , {c2.value}')
     # logic
     if guess == "higher":
-        return c1.value < c2.value
+        result = c1.value < c2.value
     elif guess == "lower":
-        return c1.value > c2.value
+        result = c1.value > c2.value
 
-    return False
+    if LOGGING:
+        log_step('hilo', guess, result, sum(map(lambda c: 1 if c > c1 else -1, deck + [c2])))
+    return result
 
 def inout(c1: Card, c2: Card, c3: Card) -> bool:
     guess = None
@@ -134,15 +144,18 @@ def inout(c1: Card, c2: Card, c3: Card) -> bool:
     bounds = sorted([c1,c2])
 
     if SMART:
-        guess = "inside" if sum(map(lambda c: 1 if c > bounds[0] and c < bounds[1] else -1, deck)) > 0 else "outside"
+        guess = "inside" if sum(map(lambda c: 1 if c > bounds[0] and c < bounds[1] else -1, deck + [c3])) > 0 else "outside"
     
     if DEBUG:
         print(f'INOUT: {guess} vs {bounds}, {c3}')
     if guess == "inside":
-        return c3 > bounds[0] and c3 < bounds[1]
+        result = c3 > bounds[0] and c3 < bounds[1]
     elif guess == "outside":
-        return c3 < bounds[0] or c3 > bounds[1]
-    return False
+        result = c3 < bounds[0] or c3 > bounds[1]
+    
+    if LOGGING:
+        log_step('inout', guess, result, sum(map(lambda c: 1 if c > bounds[0] and c < bounds[1] else -1, deck + [c3])))
+    return result
 
 def suit(c4: Card) -> bool:
     guess = None
@@ -155,14 +168,22 @@ def suit(c4: Card) -> bool:
     else:
         guess = "Diamonds"
 
+    d = {"Clubs": 0, "Spades": 0, "Hearts": 0, "Diamonds": 0}
+    for c in deck:
+        d[c.suit] += 1
+
     if SMART:
-        d = {"Clubs": 0, "Spades": 0, "Hearts": 0, "Diamonds": 0}
-        for c in deck:
-            d[c.suit] += 1
         guess = sorted(d.items(), key=lambda x: -x[1])[0][0]
     if DEBUG:
         print(f'SUIT: {guess} vs {c4.suit}')
-    return guess == c4.suit
+    result = guess == c4.suit
+
+    if LOGGING:
+        log_step('suit', guess, result, ':'.join(f'{d[k]}' for k in sorted(d)))
+    return result
+
+def log_step(step_name, guess, result, deck_status):
+    LOGFILE.write(f'{SMART}, {step_name}, {deck_status}, {guess}, {result}\n')
 
 def graphit(scores):
     plt.hist(scores, bins=20, range=(0,100))
