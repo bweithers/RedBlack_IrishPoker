@@ -2,6 +2,7 @@ from random import shuffle, random
 from statistics import mean, stdev
 import matplotlib.pyplot as plt
 
+DEBUG = False
 deck = []
 class Card:
     def __init__(self, suit, value, face):
@@ -33,7 +34,8 @@ def driver():
     attempts = 0
     while True:
         attempts += 1
-        # print(f'\nattempt: {attempts}')
+        if DEBUG:
+            print(f'\nattempt: {attempts}')
         c1 = get_card()
         if not rb(c1):
             continue
@@ -85,7 +87,8 @@ def rb(c1: Card) -> bool:
     
     guess = "red" if sum(map(lambda c: 1 if c.suit in ("Hearts", "Diamonds") else -1, deck)) > 0 else "black"
     
-    # print(f'RB: {guess} vs {c1.suit}')
+    if DEBUG:
+        print(f'RB: {guess} vs {c1.suit}')
     # logic
     if guess == "red" and c1.suit in ("Hearts", "Diamonds"):
         return True
@@ -101,9 +104,10 @@ def hilo(c1: Card, c2: Card) -> bool:
     else:
         guess = "lower"
 
-    guess = "lower" if sum(map(lambda c: 1 if c > c1.value else -1, deck)) > 0 else "higher"
+    guess = "higher" if sum(map(lambda c: 1 if c > c1 else -1, deck)) > 0 else "lower"
 
-    # print(f'HILO: {guess} vs {c1.value} , {c2.value}')
+    if DEBUG:
+        print(f'HILO: {guess} vs {c1.value} , {c2.value}')
     # logic
     if guess == "higher":
         return c1.value < c2.value
@@ -123,8 +127,9 @@ def inout(c1: Card, c2: Card, c3: Card) -> bool:
     bounds = sorted([c1,c2])
 
     guess = "inside" if sum(map(lambda c: 1 if c > bounds[0] and c < bounds[1] else -1, deck)) > 0 else "outside"
-
-    # print(f'INOUT: {guess} vs {bounds}, {c3}')
+    
+    if DEBUG:
+        print(f'INOUT: {guess} vs {bounds}, {c3}')
     if guess == "inside":
         return c3 > bounds[0] and c3 < bounds[1]
     elif guess == "outside":
@@ -144,15 +149,16 @@ def suit(c4: Card) -> bool:
     d = {"Clubs": 0, "Spades": 0, "Hearts": 0, "Diamonds": 0}
     for c in deck:
         d[c.suit] += 1
-    guess = sorted(d.items(), key=lambda x: -x[1])[0]
-    # print(f'SUIT: {guess} vs {c4.suit}')
+    guess = sorted(d.items(), key=lambda x: -x[1])[0][0]
+    if DEBUG:
+        print(f'SUIT: {guess} vs {c4.suit}')
     return guess == c4.suit
 
 def graphit(scores):
     plt.hist(scores, bins=20, range=(0,100))
-    plt.title("Irish Poker Score Distribution")
+    plt.title("Ride the Bus Distribution")
     plt.xlabel("Score")
     plt.ylabel("Frequency")
-    plt.savefig('irishpoker.png')
+    plt.savefig('ridethebus_smart.png')
 
 __main__()
