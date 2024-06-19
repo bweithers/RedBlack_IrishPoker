@@ -2,7 +2,8 @@ from random import shuffle, random
 from statistics import mean, stdev
 import matplotlib.pyplot as plt
 
-DEBUG = False
+DEBUG = True
+SMART = False
 deck = []
 class Card:
     def __init__(self, suit, value, face):
@@ -71,21 +72,27 @@ def __main__():
     # print('start')
     makeDeck()
     scores = []
-    for _ in range(100000):
-        x = driver()
-        scores.append(x) 
+    for _ in range(1):
+        scores.append(driver()) 
+    # print(f'{mean(scores)=:.2f}, {stdev(scores)=:.2f}')
+    SMART = True
+    scores = []
+    for _ in range(1):
+        scores.append(driver()) 
+    # print(f'{mean(scores)=:.2f}, {stdev(scores)=:.2f}')
+    
     # print('done')
-    graphit(scores)
+    # graphit(scores)
 
 def rb(c1: Card) -> bool:
     # guessing algo
-    # guess = None
-    # if random() > 0.5:
-    #     guess = "red"
-    # else:
-    #     guess = "black"  
-    
-    guess = "red" if sum(map(lambda c: 1 if c.suit in ("Hearts", "Diamonds") else -1, deck)) > 0 else "black"
+    guess = None
+    if random() > 0.5:
+        guess = "red"
+    else:
+        guess = "black"  
+    if SMART:
+        guess = "red" if sum(map(lambda c: 1 if c.suit in ("Hearts", "Diamonds") else -1, deck)) > 0 else "black"
     
     if DEBUG:
         print(f'RB: {guess} vs {c1.suit}')
@@ -103,8 +110,8 @@ def hilo(c1: Card, c2: Card) -> bool:
         guess = "higher"
     else:
         guess = "lower"
-
-    guess = "higher" if sum(map(lambda c: 1 if c > c1 else -1, deck)) > 0 else "lower"
+    if SMART:
+        guess = "higher" if sum(map(lambda c: 1 if c > c1 else -1, deck)) > 0 else "lower"
 
     if DEBUG:
         print(f'HILO: {guess} vs {c1.value} , {c2.value}')
@@ -126,7 +133,8 @@ def inout(c1: Card, c2: Card, c3: Card) -> bool:
     # logic
     bounds = sorted([c1,c2])
 
-    guess = "inside" if sum(map(lambda c: 1 if c > bounds[0] and c < bounds[1] else -1, deck)) > 0 else "outside"
+    if SMART:
+        guess = "inside" if sum(map(lambda c: 1 if c > bounds[0] and c < bounds[1] else -1, deck)) > 0 else "outside"
     
     if DEBUG:
         print(f'INOUT: {guess} vs {bounds}, {c3}')
@@ -146,10 +154,12 @@ def suit(c4: Card) -> bool:
         guess = "Hearts"
     else:
         guess = "Diamonds"
-    d = {"Clubs": 0, "Spades": 0, "Hearts": 0, "Diamonds": 0}
-    for c in deck:
-        d[c.suit] += 1
-    guess = sorted(d.items(), key=lambda x: -x[1])[0][0]
+
+    if SMART:
+        d = {"Clubs": 0, "Spades": 0, "Hearts": 0, "Diamonds": 0}
+        for c in deck:
+            d[c.suit] += 1
+        guess = sorted(d.items(), key=lambda x: -x[1])[0][0]
     if DEBUG:
         print(f'SUIT: {guess} vs {c4.suit}')
     return guess == c4.suit
