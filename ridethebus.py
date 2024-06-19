@@ -77,11 +77,13 @@ def __main__():
 
 def rb(c1: Card) -> bool:
     # guessing algo
-    guess = None
-    if random() > 0.5:
-        guess = "red"
-    else:
-        guess = "black"  
+    # guess = None
+    # if random() > 0.5:
+    #     guess = "red"
+    # else:
+    #     guess = "black"  
+    
+    guess = "red" if sum(map(lambda c: 1 if c.suit in ("Hearts", "Diamonds") else -1, deck)) > 0 else "black"
     
     # print(f'RB: {guess} vs {c1.suit}')
     # logic
@@ -98,7 +100,9 @@ def hilo(c1: Card, c2: Card) -> bool:
         guess = "higher"
     else:
         guess = "lower"
-    
+
+    guess = "lower" if sum(map(lambda c: 1 if c > c1.value else -1, deck)) > 0 else "higher"
+
     # print(f'HILO: {guess} vs {c1.value} , {c2.value}')
     # logic
     if guess == "higher":
@@ -117,6 +121,9 @@ def inout(c1: Card, c2: Card, c3: Card) -> bool:
 
     # logic
     bounds = sorted([c1,c2])
+
+    guess = "inside" if sum(map(lambda c: 1 if c > bounds[0] and c < bounds[1] else -1, deck)) > 0 else "outside"
+
     # print(f'INOUT: {guess} vs {bounds}, {c3}')
     if guess == "inside":
         return c3 > bounds[0] and c3 < bounds[1]
@@ -134,6 +141,10 @@ def suit(c4: Card) -> bool:
         guess = "Hearts"
     else:
         guess = "Diamonds"
+    d = {"Clubs": 0, "Spades": 0, "Hearts": 0, "Diamonds": 0}
+    for c in deck:
+        d[c.suit] += 1
+    guess = sorted(d.items(), key=lambda x: -x[1])[0]
     # print(f'SUIT: {guess} vs {c4.suit}')
     return guess == c4.suit
 
