@@ -7,10 +7,10 @@ Dealer flips one card at a time for a player to guess 'Red' or 'Black' then remo
 
 *Ride the Bus*
 ----------------
-A four step card game, a player is given cards where they must guess correctly or start over. In order they must predict whether the card is: 
-    1) Red or Black
-    2) Higher or Lower (or equal to) card 1
-    3) Inside or outside the bounds of card 1 and card 2 (e.g. c1 = 4h c2 = 10s 7d would be inside, Jd would be outside)
-    4) The suit of the final card
+A four step card game, a player is given cards where they must guess correctly or start over. In order they must predict whether the card is: <br>
+    1) Red or Black <br>
+    2) Higher or Lower (or equal to) card 1 <br>
+    3) Inside or outside the bounds of card 1 and card 2 (e.g. c1 = 4h c2 = 10s 7d would be inside, Jd would be outside) <br>
+    4) The suit of the final card <br>
 
 ![comparison graph](image.png)
