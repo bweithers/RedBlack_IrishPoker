@@ -1,11 +1,11 @@
 from random import shuffle, random
-from statistics import mean, stdev
+from statistics import mean, stdev, median
 import matplotlib.pyplot as plt
 from datetime import datetime
 
 DEBUG = False
 SMART = False
-LOGGING = True
+LOGGING = False
 LOGFILE = open('log.csv', 'a')
 deck = []
 class Card:
@@ -73,21 +73,21 @@ def makeDeck():
     
 def __main__():
     makeDeck()
-    scores = []
+    s1 = []
     iterations = 10000 
     for _ in range(iterations):
-        scores.append(driver())
-    print(f'Random mode: {mean(scores)=:.2f}, {stdev(scores)=:.2f}')
+        s1.append(driver())
+    print(f'Random mode: {mean(s1)=:.2f}, {stdev(s1)=:.2f}')
 
     makeDeck()
     global SMART
     SMART = True
-    scores = []
+    s2 = []
     for _ in range(iterations):
-        scores.append(driver())
-    print(f'SMART mode: {mean(scores)=:.2f}, {stdev(scores)=:.2f}')
+        s2.append(driver())
+    print(f'SMART mode: {mean(s2)=:.2f}, {stdev(s2)=:.2f}')
     
-    # graphit(scores)
+    graphit(s1,s2)
 
 def rb(c1: Card) -> bool:
     # guessing algo
@@ -185,8 +185,33 @@ def suit(c4: Card) -> bool:
 def log_step(step_name, guess, result, deck_status):
     LOGFILE.write(f'{SMART}, {step_name}, {deck_status}, {guess}, {result}\n')
 
-def graphit(scores):
-    plt.hist(scores, bins=20, range=(0,100))
+def graphit(s1,s2):
+    plt.hist(s1, bins=20, range=(0,200), alpha=0.5, label='Random', color='Red')
+    plt.hist(s2, bins=20, range=(0,200), alpha=0.5, label='Smart', color='Blue')
+
+    rmean = mean(s1)
+    rstd = stdev(s1)
+    rmed = median(s1)
+
+    smean = mean(s2)
+    sstd = stdev(s2)
+    smed = median(s2)
+    # Add text annotations
+    plt.text(50, plt.ylim()[1]*0.9, f'Mean: {rmean:.2f}', color='Red', ha='left')
+    plt.text(50, plt.ylim()[1]*0.85, f'1 Sigma: {rmean + rstd:.2f}', color='Red', ha='left')
+    plt.text(50, plt.ylim()[1]*0.8, f'Max: {max(s1):.2f}', color="Red", ha='left')
+
+    plt.text(100, plt.ylim()[1]*0.9, f'Mean: {smean:.2f}', color='Blue', ha='left')
+    plt.text(100, plt.ylim()[1]*0.85, f'1 Sigma: {smean + sstd:.2f}', color='Blue', ha='left')
+    plt.text(100, plt.ylim()[1]*0.8, f'Max: {max(s2):.2f}', color="Blue", ha='left')
+
+    
+
+    plt.axvline(rmean, color='Red', linestyle='dashed', linewidth=1) 
+    plt.axvline(smean, color = 'Blue', linestyle='dashed', linewidth=1)
+
+    
+    plt.legend()
     plt.title("Ride the Bus Distribution")
     plt.xlabel("Score")
     plt.ylabel("Frequency")
